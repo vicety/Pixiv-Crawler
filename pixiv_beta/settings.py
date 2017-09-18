@@ -10,6 +10,12 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
 import os
+import configparser
+
+prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+os.chdir(prj_dir)
+cf = configparser.ConfigParser()
+cf.read("settings.conf")
 
 BOT_NAME = 'pixiv_beta'
 
@@ -71,9 +77,11 @@ ITEM_PIPELINES = {
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
     'pixiv_beta.pipelines.PixivBetaImagePipeline': 1,
 }
+IMAGES_MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
+IMAGES_MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
 IMAGES_URLS_FIELD = "img_url"
-prj_dir = os.path.abspath(os.path.dirname(__file__))
-IMAGES_STORE = os.path.join(prj_dir, 'images')
+
+IMAGES_STORE = os.path.join(prj_dir, 'images') if cf.get('IMG', 'STORE_PATH') == "NONE" else cf.get('IMG', 'STORE_PATH')
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

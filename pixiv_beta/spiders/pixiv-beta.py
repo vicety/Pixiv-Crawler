@@ -5,32 +5,47 @@ from pixiv_beta.utils.PixivError import *
 from pixiv_beta.items import ImageItem
 from scrapy.http.cookies import CookieJar
 import requests
+import configparser
+import os
+from pixiv_beta.settings import prj_dir
+
+cf = configparser.ConfigParser()
+os.chdir(prj_dir)
+cf.read("settings.conf")
 
 class pixivSpider(scrapy.Spider):
-
+    def __init__(self):
+        super().__init__()
+        self.ENTRY_URLS = {
+            'COLLECTION': 'https://www.pixiv.net/bookmark.php',
+            'ARTIST': 'https://www.pixiv.net/member_illust.php?id={0}'.format(cf.get('ART', 'ID')),
+            'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag{0}&word={1}'.format('&mode=r18' if cf.getboolean('SRH', 'R18') else '', '+'.join(cf.get('SRH', 'TAGS').split(" "))),
+        }
+        self.ENTRY_FUNC = {
+            'COLLECTION': self.collection,
+            'ARTIST': self.artist,
+            'SEARCH': self.search,
+        }
+        # self.FAV_FILTER = {
+        #     'COLLECTION': True,
+        #     'ARTIST': False,
+        #     'SEARCH': True,
+        # }
+        self.MIN_FAV = cf.getint('IMG', 'MIN_FAV')
+        self.entry = cf.get('PRJ', 'TARGET')
+    name = "pixivSpider"
+    collection_num = -1
     process = 0
     all = 0
-    name = "pixivSpider"
+
     # allowed_domains = []
     start_urls = ['https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index']
     agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
-    header_ori = {
-        "Host": "accounts.pixiv.net",
-        "Origin": "https://accounts.pixiv.net",
-        "Referer": "https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index",
-        "User-Agent": agent,
-        "Connection": "keep-alive",
-        # "Accept": "application/json, text/javascript, */*; q=0.01",
-        # "Accept-Encoding": "gzip, deflate, br",
-        # "X-Requested-With": "XMLHttpRequest",
-        "Cookie": "p_ab_id=3; p_ab_id_2=4; bookmark_tag_type=count; bookmark_tag_order=desc; show_welcome_modal=1; device_token=480d576b6ad09b5a602e6f6fbb4b9593; module_orders_mypage=%5B%7B%22name%22%3A%22recommended_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22everyone_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22following_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22mypixiv_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22fanbox%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22featured_tags%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22contests%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22sensei_courses%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22spotlight%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22booth_follow_items%22%2C%22visible%22%3Atrue%7D%5D; PHPSESSID=3219b2a504870744423b7185cba55b26; login_bc=1; __utmt=1; __utma=235335808.2088567130.1501534936.1505314070.1505321297.32; __utmb=235335808.3.10.1505321297; __utmc=235335808; __utmz=235335808.1505295003.30.7.utmcsr=accounts.pixiv.net|utmccn=(referral)|utmcmd=referral|utmcct=/login; __utmv=235335808.|2=login%20ever=yes=1^3=plan=normal=1^5=gender=male=1^6=user_id=27609595=1^9=p_ab_id=3=1^10=p_ab_id_2=4=1^11=lang=zh=1; _ga=GA1.2.2088567130.1501534936; _gid=GA1.2.321153936.1505067374; _gat=1; _ga=GA1.3.2088567130.1501534936; _gid=GA1.3.321153936.1505067374; _gat_UA-76252338-4=1",
-        # "Content-Length": "185",
-        # "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "Accept-Language": "zh-CN,zh;q=0.8"
-    }
+
     header = {
         'Origin': 'https://accounts.pixiv.net',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36',
+        # 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36',
+        'User-Agent': agent,
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Referer': 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index',
         'X-Requested-With': 'XMLHttpRequest',
@@ -49,7 +64,7 @@ class pixivSpider(scrapy.Spider):
         start = pixiv_token.find('"')
         token = pixiv_token[start + 1:-1]
         # post_key = re.match('.*"pixivAccount.postKey":"(\w+?)"', response.text, re.S).group(1)
-        print("must login before using the function")
+        print("must login before using")
         account = input("account >")
         password = input("password >")
         post_data = {
@@ -65,44 +80,73 @@ class pixivSpider(scrapy.Spider):
         return [scrapy.FormRequest("https://accounts.pixiv.net/api/login?lang=zh", headers=self.header, formdata=post_data, callback=self.center, cookies=dict(index_cookie))]
 
     def center(self, response):
-        cmd = {"get_bookmark": self.collection}
-        msg = "get_bookmark"
         self.process = 0
-        yield scrapy.Request('https://www.pixiv.net/bookmark.php', headers=self.header, callback=cmd[msg])
+
+        yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
 
     def collection(self, response):
-        collection_num = -1
-        if collection_num == -1:
-            collection_num = response.css(".column-label .count-badge::text").extract_first('')[:-1]
-            if not collection_num:
-                raise UnmatchError("collection_num not matched")
-            self.all = collection_num
-        else:
-            print("crawling process {0}/{1}".format(self.process, self.all))
-        all_collection_urls = response.css('._image-items.js-legacy-mark-unmark-list li.image-item a.work._work::attr(href)').extract()
+        self.update_process(response, ".column-label .count-badge::text", 'Crawling collections...')
+        image_items = response.css('._image-items.js-legacy-mark-unmark-list li.image-item')
+        all_collection_urls = []
+        for image_item in image_items:
+            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')) < self.MIN_FAV:
+                self.process += 1
+            else:
+                all_collection_urls.append(image_item.css('a.work._work::attr(href)').extract_first(''))
         all_collection_urls = [parse.urljoin(response.url, url) for url in all_collection_urls]
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
-        if next_page_url:
+        # ???
+        if self.tryNextPage(next_page_url):
             next_page_url = parse.urljoin(response.url, next_page_url)
-            yield  scrapy.Request(next_page_url, headers=self.header, callback=self.collection)
-        else:
-            print("reached the last page")
+            yield scrapy.Request(next_page_url, headers=self.header, callback=self.collection)
         for url in all_collection_urls:
+            self.process += 1
+            yield scrapy.Request(url, headers=self.header, callback=self.image_page)
+
+    def artist(self, response):
+        self.update_process(response, "div._unit.manage-unit span.count-badge::text", "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')))
+        all_works_url = response.css('ul._image-items li.image-item a.work._work::attr(href)').extract()
+        all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
+        next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
+        if self.tryNextPage(next_page_url):
+            next_page_url = parse.urljoin(response.url, next_page_url)
+            yield scrapy.Request(next_page_url, headers=self.header, callback=self.artist)
+        for url in all_works_url:
+            self.process += 1
+            yield scrapy.Request(url, headers=self.header, callback=self.image_page)
+
+    def search(self, response):
+        self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
+        image_items = response.css("ul li.image-item")
+        all_works_url = []
+        for image_item in image_items:
+            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('0')) < self.MIN_FAV:
+                self.process += 1
+            else:
+                all_works_url.append(image_item.css('a.work._work::attr(href)').extract_first(''))
+        all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
+        next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
+        if self.tryNextPage(next_page_url):
+            next_page_url = parse.urljoin(response.url, next_page_url)
+            yield scrapy.Request(next_page_url, headers=self.header, callback=self.search)
+        for url in all_works_url:
+            self.process += 1
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def image_page(self, response):
+
+        name = response.css("._unit._work-detail-unit .work-info h1.title::text").extract_first('')
+        print("Crawling {0}".format(name))
         see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
         if see_more:
             see_more = parse.urljoin(response.url, see_more)
             yield scrapy.Request(see_more, callback=self.multiImgPage)
-            self.process += 1
             return
         img_item = ImageItem()
         img_url = response.css('div._illust_modal.ui-modal-close-box div.wrapper img.original-image::attr(data-src)').extract_first('')
         if not img_url:
             raise UnmatchError("image unmatched or not enough authority to visit the page when crawling {0}".format(response.url))
         img_item["img_url"] = [img_url]
-
         yield img_item
 
     def multiImgPage(self, response):
@@ -118,3 +162,22 @@ class pixivSpider(scrapy.Spider):
         img_item["img_url"] = [img_url]
         yield img_item
 
+    def update_process(self, response, restr, log):
+        # 适用于 xxx件
+        if self.collection_num == -1:
+            print("login successfully")
+            print(log)
+            self.collection_num = response.css(restr).extract_first('')[:-1]
+            print("found {0}".format(self.collection_num))
+            if not self.collection_num:
+                raise UnmatchError("collection_num not matched")
+            self.all = self.collection_num
+        else:
+            print("crawling process {0}/{1}".format(self.process, self.all))
+
+    def tryNextPage(self, next_page_url):
+        if next_page_url:
+            return True
+        else:
+            print("reached the last page")
+            return False
