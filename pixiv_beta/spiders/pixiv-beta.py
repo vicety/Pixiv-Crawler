@@ -7,6 +7,7 @@ from scrapy.http.cookies import CookieJar
 import requests
 
 class pixivSpider(scrapy.Spider):
+
     process = 0
     all = 0
     name = "pixivSpider"
@@ -41,19 +42,19 @@ class pixivSpider(scrapy.Spider):
         return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login )]
 
     def login(self, response):
-        # cookie_jar = response.meta["cookiejar"]
-        # cookie_jar.extract_cookies(response, response.request)
-        # a = response.meta['cookie']
         index_request = requests.get('http://www.pixiv.net', headers=self.header)
         index_cookie = index_request.cookies
         index_html = index_request.text
         pixiv_token = re.search(r'pixiv.context.token = (")(.*?)(")', index_html).group()
         start = pixiv_token.find('"')
         token = pixiv_token[start + 1:-1]
-        post_key = re.match('.*"pixivAccount.postKey":"(\w+?)"', response.text, re.S).group(1)
+        # post_key = re.match('.*"pixivAccount.postKey":"(\w+?)"', response.text, re.S).group(1)
+        print("must login before using the function")
+        account = input("account >")
+        password = input("password >")
         post_data = {
-            "pixiv_id": "vicety",
-            "password": "PA19981031",
+            "pixiv_id": account,
+            "password": password,
             "captcha": "",
             "g_recaptcha_response": "",
             "post_key": token,
@@ -72,7 +73,7 @@ class pixivSpider(scrapy.Spider):
     def collection(self, response):
         collection_num = -1
         if collection_num == -1:
-            collection_num = response.css(".column-label .column-title .count-badge::text").extract_first('')[:-1]
+            collection_num = response.css(".column-label .count-badge::text").extract_first('')[:-1]
             if not collection_num:
                 raise UnmatchError("collection_num not matched")
             self.all = collection_num
@@ -106,14 +107,10 @@ class pixivSpider(scrapy.Spider):
 
     def multiImgPage(self, response):
         son_urls = response.css('.manga .item-container a.full-size-container._ui-tooltip::attr(href)').extract()
-        # html.verticaltext.no - textcombine.no - ie
-        # body
-        # section  # main section.manga div.item-container a.full-size-container._ui-tooltip
         son_urls = [parse.urljoin(response.url, url) for url in son_urls]
         for url in son_urls:
             yield scrapy.Request(url, callback=self.multiImgPageSingle)
-        # img_item['img_url'] = [url.replace("_master1200", "") for url in img_urls]
-        # yield img_item
+
 
     def multiImgPageSingle(self, response):
         img_url = response.css('body img::attr(src)').extract_first("")
