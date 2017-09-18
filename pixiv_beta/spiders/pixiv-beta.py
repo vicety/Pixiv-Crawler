@@ -38,6 +38,9 @@ class pixivSpider(scrapy.Spider):
     cookie = 'p_ab_id=3; p_ab_id_2=4; bookmark_tag_type=count; bookmark_tag_order=desc; show_welcome_modal=1; module_orders_mypage=%5B%7B%22name%22%3A%22recommended_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22everyone_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22following_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22mypixiv_new_illusts%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22fanbox%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22featured_tags%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22contests%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22sensei_courses%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22spotlight%22%2C%22visible%22%3Atrue%7D%2C%7B%22name%22%3A%22booth_follow_items%22%2C%22visible%22%3Atrue%7D%5D; device_token=480d576b6ad09b5a602e6f6fbb4b9593; __utmt=1; PHPSESSID=9deed4b733371c19ed8a86cf5b0c1c18; __utma=235335808.2088567130.1501534936.1505413439.1505417847.41; __utmb=235335808.2.10.1505417847; __utmc=235335808; __utmz=235335808.1505333595.35.9.utmcsr=accounts.pixiv.net|utmccn=(referral)|utmcmd=referral|utmcct=/login; __utmv=235335808.|2=login%20ever=yes=1^3=plan=normal=1^5=gender=male=1^6=user_id=17759808=1^9=p_ab_id=3=1^10=p_ab_id_2=4=1^11=lang=zh=1; login_bc=1; _ga=GA1.2.2088567130.1501534936; _gid=GA1.2.321153936.1505067374; _ga=GA1.3.2088567130.1501534936; _gid=GA1.3.321153936.1505067374'
 
     def start_requests(self):
+        account = input("account>")
+        password = input("password>")
+
         self.cookie_jar = CookieJar()
         return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login )]
 
