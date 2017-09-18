@@ -1,5 +1,6 @@
 # pixiv-beta
-	这是一个scrapy框架的爬虫
+这是一个scrapy框架的爬虫
+基于`win10`、`Python 3.6.2`、`Scrapy 1.4.0`开发，其他环境下未测试
 
 ### 功能
 * 我的收藏导出
@@ -13,7 +14,7 @@
 * 增加一些其他的插画网站
 * 一些细节
 
-基于`win10`、`Python 3.6.2`、`Scrapy 1.4.0`开发，其他环境下未测试
+
 
 ### requirements
 * python
@@ -23,10 +24,10 @@
 * 剩下忘了……缺什么直接pip安装就行了
 
 ### 使用方法
-程序入口为`main.py`，运行配置均在`settings.conf·中设置
+程序入口为`main.py`，运行配置均在`settings.conf`中设置，运行时会提示一次输入账号密码
 #### Setting文件说明
 	[PRJ]  
-	TARGET = COLLECTION  // 执行方式（见下） 
+	TARGET = COLLECTION  // 三种执行方式之一 COLLECTION  ARTIST SEARCH 对应 收藏导出 画师作品导出 搜索内容导出 
 
 	[IMG]
 	MIN_WIDTH = 0	//图片筛选条件
@@ -43,7 +44,7 @@
 
 	[DAILY] 
 
-对于执行方式 COLLECTION 收藏导出 ARTIST 画师作品导出 SEARCH 搜索内容导出
+对于执行方式 
 
 
 最后，初次写爬虫，写得不是很好，有任何问题欢迎指教
