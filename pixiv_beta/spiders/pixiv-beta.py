@@ -64,7 +64,7 @@ class pixivSpider(scrapy.Spider):
         start = pixiv_token.find('"')
         token = pixiv_token[start + 1:-1]
         # post_key = re.match('.*"pixivAccount.postKey":"(\w+?)"', response.text, re.S).group(1)
-        print("must login before using")
+        print("please login")
         account = input("account >")
         password = input("password >")
         post_data = {

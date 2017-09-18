@@ -1,4 +1,4 @@
-# pixiv-beta
+# Pixiv-Crawler
 这是一个scrapy框架的爬虫
 基于`win10`、`Python 3.6.2`、`Scrapy 1.4.0`开发，其他环境下未测试
 
@@ -21,7 +21,7 @@
 * scrapy 
 * pillow 
 * pypiwin32 
-* 剩下忘了……缺什么直接pip安装就行了
+* 如果还缺少什么，一般直接pip install就可以了
 
 ### 使用方法
 程序入口为`main.py`，运行配置均在`settings.conf`中设置，运行时会提示一次输入账号密码
@@ -44,7 +44,6 @@
 
 	[DAILY] 
 
-对于执行方式 
 
 
 最后，初次写爬虫，写得不是很好，有任何问题欢迎指教
