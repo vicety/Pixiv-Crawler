@@ -9,13 +9,17 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
+import codecs
 import os
 import configparser
 
 prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 os.chdir(prj_dir)
 cf = configparser.ConfigParser()
-cf.read("settings.conf")
+cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
+
+a = cf.get('SRH', 'TAGS')
+
 
 BOT_NAME = 'pixiv_beta'
 
@@ -81,7 +85,7 @@ IMAGES_MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
 IMAGES_MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
 IMAGES_URLS_FIELD = "img_url"
 
-IMAGES_STORE = os.path.join(prj_dir, 'images') if cf.get('IMG', 'STORE_PATH') == "NONE" else cf.get('IMG', 'STORE_PATH')
+IMAGES_STORE = os.path.join(prj_dir, 'images') if not os.path.isdir(cf.get('IMG', 'STORE_PATH')) else cf.get('IMG', 'STORE_PATH')
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

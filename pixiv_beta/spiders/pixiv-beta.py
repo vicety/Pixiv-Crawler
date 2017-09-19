@@ -5,13 +5,15 @@ from pixiv_beta.utils.PixivError import *
 from pixiv_beta.items import ImageItem
 from scrapy.http.cookies import CookieJar
 import requests
+import codecs
 import configparser
 import os
+import json
 from pixiv_beta.settings import prj_dir
 
 cf = configparser.ConfigParser()
 os.chdir(prj_dir)
-cf.read("settings.conf")
+cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 
 class pixivSpider(scrapy.Spider):
     def __init__(self):
@@ -19,7 +21,7 @@ class pixivSpider(scrapy.Spider):
         self.ENTRY_URLS = {
             'COLLECTION': 'https://www.pixiv.net/bookmark.php',
             'ARTIST': 'https://www.pixiv.net/member_illust.php?id={0}'.format(cf.get('ART', 'ID')),
-            'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag{0}&word={1}'.format('&mode=r18' if cf.getboolean('SRH', 'R18') else '', '+'.join(cf.get('SRH', 'TAGS').split(" "))),
+            'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag&word={0}'.format('%20'.join(cf.get('SRH', 'TAGS').split(" "))),
         }
         self.ENTRY_FUNC = {
             'COLLECTION': self.collection,
@@ -31,8 +33,13 @@ class pixivSpider(scrapy.Spider):
         #     'ARTIST': False,
         #     'SEARCH': True,
         # }
+        self.R18 = cf.getboolean('IMG', 'R18')
+        self.MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
+        self.MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
         self.MIN_FAV = cf.getint('IMG', 'MIN_FAV')
         self.entry = cf.get('PRJ', 'TARGET')
+        self.account = cf.get('PRJ', 'ACCOUNT')
+        self.password = cf.get('PRJ', 'PASSWORD')
     name = "pixivSpider"
     collection_num = -1
     process = 0
@@ -65,8 +72,8 @@ class pixivSpider(scrapy.Spider):
         token = pixiv_token[start + 1:-1]
         # post_key = re.match('.*"pixivAccount.postKey":"(\w+?)"', response.text, re.S).group(1)
         print("please login")
-        account = input("account >")
-        password = input("password >")
+        account = self.account if self.account else input("account >")
+        password = self.password if self.password else input("password >")
         post_data = {
             "pixiv_id": account,
             "password": password,
@@ -87,11 +94,10 @@ class pixivSpider(scrapy.Spider):
     def collection(self, response):
         self.update_process(response, ".column-label .count-badge::text", 'Crawling collections...')
         image_items = response.css('._image-items.js-legacy-mark-unmark-list li.image-item')
+        self.process+=len(image_items)
         all_collection_urls = []
         for image_item in image_items:
-            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')) < self.MIN_FAV:
-                self.process += 1
-            else:
+            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')) >= self.MIN_FAV:
                 all_collection_urls.append(image_item.css('a.work._work::attr(href)').extract_first(''))
         all_collection_urls = [parse.urljoin(response.url, url) for url in all_collection_urls]
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
@@ -100,47 +106,53 @@ class pixivSpider(scrapy.Spider):
             next_page_url = parse.urljoin(response.url, next_page_url)
             yield scrapy.Request(next_page_url, headers=self.header, callback=self.collection)
         for url in all_collection_urls:
-            self.process += 1
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def artist(self, response):
         self.update_process(response, "div._unit.manage-unit span.count-badge::text", "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')))
         all_works_url = response.css('ul._image-items li.image-item a.work._work::attr(href)').extract()
         all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
+        self.process+=len(all_works_url)
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
         if self.tryNextPage(next_page_url):
             next_page_url = parse.urljoin(response.url, next_page_url)
             yield scrapy.Request(next_page_url, headers=self.header, callback=self.artist)
         for url in all_works_url:
-            self.process += 1
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def search(self, response):
+        test = response.css("section.column-search-result #js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
+        js = json.loads(test)
         self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
-        image_items = response.css("ul li.image-item")
+        # image_items = response.css("ul li.image-item")
+        self.process += len(js)
         all_works_url = []
-        for image_item in image_items:
-            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('0')) < self.MIN_FAV:
-                self.process += 1
-            else:
-                all_works_url.append(image_item.css('a.work._work::attr(href)').extract_first(''))
-        all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
+        for image_item in js:
+            if image_item["bookmarkCount"] >= self.MIN_FAV:
+                all_works_url.append('https://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}'.format(image_item["illustId"]))
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
         if self.tryNextPage(next_page_url):
             next_page_url = parse.urljoin(response.url, next_page_url)
             yield scrapy.Request(next_page_url, headers=self.header, callback=self.search)
         for url in all_works_url:
-            self.process += 1
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def image_page(self, response):
-
-        name = response.css("._unit._work-detail-unit .work-info h1.title::text").extract_first('')
+        all_img_data = response.css('._unit._work-detail-unit .work-info ul li::text').extract()
+        if ('R-18' in all_img_data[-1]) ^ self.R18:
+            return
+        # R18 总在最后一个 多张作品与分辨率不兼容
+        for img_data in all_img_data:
+            if '多张作品' in img_data:
+                see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
+                see_more = parse.urljoin(response.url, see_more)
+                yield scrapy.Request(see_more, callback=self.multiImgPage)
+                return
+            elif '×' in img_data:
+                img_width, img_height = list(map(int, img_data.split('×')))
+        name = response.css("._unit._work-detail-unit .work-info h1.title::text").extract_first('') # 没有把name传递到多图部分，多图部分没有log name
         print("Crawling {0}".format(name))
-        see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
-        if see_more:
-            see_more = parse.urljoin(response.url, see_more)
-            yield scrapy.Request(see_more, callback=self.multiImgPage)
+        if img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT:
             return
         img_item = ImageItem()
         img_url = response.css('div._illust_modal.ui-modal-close-box div.wrapper img.original-image::attr(data-src)').extract_first('')
@@ -150,6 +162,7 @@ class pixivSpider(scrapy.Spider):
         yield img_item
 
     def multiImgPage(self, response):
+        # 多张图片的分辨率筛选交给pipeline去做
         son_urls = response.css('.manga .item-container a.full-size-container._ui-tooltip::attr(href)').extract()
         son_urls = [parse.urljoin(response.url, url) for url in son_urls]
         for url in son_urls:
@@ -166,7 +179,7 @@ class pixivSpider(scrapy.Spider):
         # 适用于 xxx件
         if self.collection_num == -1:
             print("login successfully")
-            print(log)
+            # print(log.encode('gbk').decode('gbk'))  # 由于控制台程序中会出编码问题，这里先取消log
             self.collection_num = response.css(restr).extract_first('')[:-1]
             print("found {0}".format(self.collection_num))
             if not self.collection_num:
