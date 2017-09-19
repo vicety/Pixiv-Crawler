@@ -37,7 +37,7 @@
 	MIN_WIDTH = 0	//图片筛选条件
 	MIN_HEIGHT = 0
 	MIN_FAV = 0 
-	STORE_PATH = C:\example\images  // 图片储存目录，默认为工程目录下的image,
+	STORE_PATH = C:\example\images  // 图片储存目录，默认为工程目录下的image
 	R18 = False //仅R18
 
 	[ART]
@@ -54,7 +54,7 @@
 修改了setting文件结构，可以配置默认账号密码
 修复了打印日志上的一些问题
 #### V1.0
-
+初始版本
 
 
 最后，初次写爬虫，写得不是很好，有任何问题欢迎指教
