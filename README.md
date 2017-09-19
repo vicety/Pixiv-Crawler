@@ -15,7 +15,6 @@
 * 一些细节
 
 
-
 ### requirements
 * python
 * scrapy
@@ -39,9 +38,10 @@
 	MIN_FAV = 0 
 	STORE_PATH = C:\example\images  // 图片储存目录，默认为工程目录下的image
 	R18 = False //仅R18
+	MULI_IMG_ENABLED = False  // 是否下载图集
 
 	[ART]
-	ID = 123456 // 画师ID
+	ID = 123456 // 画师ID，多个以空格分隔
 
 	[SRH]
 	TAGS = TAG_A TAG_B ... // 搜索内容
@@ -50,9 +50,7 @@
 
 ### 版本日志
 #### V1.1
-修复搜索时日语编码问题
-修改了setting文件结构，可以配置默认账号密码
-修复了打印日志上的一些问题
+可以同时添加多个画师  修复搜索时日语编码问题  修改了setting文件结构，可以配置默认账号密码  修复了打印日志上的一些问题
 #### V1.0
 初始版本
 

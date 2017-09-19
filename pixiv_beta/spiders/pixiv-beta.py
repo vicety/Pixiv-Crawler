@@ -20,7 +20,7 @@ class pixivSpider(scrapy.Spider):
         super().__init__()
         self.ENTRY_URLS = {
             'COLLECTION': 'https://www.pixiv.net/bookmark.php',
-            'ARTIST': 'https://www.pixiv.net/member_illust.php?id={0}'.format(cf.get('ART', 'ID')),
+            'ARTIST': ['https://www.pixiv.net/member_illust.php?id={0}'.format(pid) for pid in cf.get('ART', 'ID').split(' ')],
             'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag&word={0}'.format('%20'.join(cf.get('SRH', 'TAGS').split(" "))),
         }
         self.ENTRY_FUNC = {
@@ -40,6 +40,7 @@ class pixivSpider(scrapy.Spider):
         self.entry = cf.get('PRJ', 'TARGET')
         self.account = cf.get('PRJ', 'ACCOUNT')
         self.password = cf.get('PRJ', 'PASSWORD')
+        self.MULTI_IMAGE_ENABLED = cf.getboolean('IMG', 'MULTI_IMG_ENABLED')
     name = "pixivSpider"
     collection_num = -1
     process = 0
@@ -143,7 +144,7 @@ class pixivSpider(scrapy.Spider):
             return
         # R18 总在最后一个 多张作品与分辨率不兼容
         for img_data in all_img_data:
-            if '多张作品' in img_data:
+            if '多张作品' in img_data and self.MULTI_IMAGE_ENABLED:
                 see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
                 see_more = parse.urljoin(response.url, see_more)
                 yield scrapy.Request(see_more, callback=self.multiImgPage)

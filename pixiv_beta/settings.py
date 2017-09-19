@@ -18,7 +18,6 @@ os.chdir(prj_dir)
 cf = configparser.ConfigParser()
 cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 
-a = cf.get('SRH', 'TAGS')
 
 
 BOT_NAME = 'pixiv_beta'
