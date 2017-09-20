@@ -1,8 +1,8 @@
 import scrapy
 import re
 from urllib import parse
-from pixiv_beta.utils.PixivError import *
-from pixiv_beta.items import ImageItem
+from ..utils.PixivError import *
+from ..items import ImageItem
 from scrapy.http.cookies import CookieJar
 import requests
 import codecs
@@ -11,7 +11,7 @@ import os
 import json
 from pixiv_beta.settings import prj_dir
 import math
-from pixiv_beta.utils.PixivError import settings_assert
+from ..utils.PixivError import settings_assert
 
 settings_assert()
 

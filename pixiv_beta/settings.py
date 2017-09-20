@@ -13,8 +13,6 @@ import codecs
 import os
 import configparser
 
-import sys
-sys.path.append('../')
 
 prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 os.chdir(prj_dir)
