@@ -13,6 +13,9 @@ import codecs
 import os
 import configparser
 
+import sys
+sys.path.append('../')
+
 prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 os.chdir(prj_dir)
 cf = configparser.ConfigParser()
@@ -84,7 +87,11 @@ IMAGES_MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
 IMAGES_MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
 IMAGES_URLS_FIELD = "img_url"
 
-IMAGES_STORE = os.path.join(prj_dir, 'images') if not os.path.isdir(cf.get('IMG', 'STORE_PATH')) else cf.get('IMG', 'STORE_PATH')
+if not os.path.isdir(cf.get('IMG', 'STORE_PATH')):
+    print("using the default path")
+    IMAGES_STORE = os.path.join(prj_dir, 'images')
+else:
+    IMAGES_STORE = cf.get('IMG', 'STORE_PATH')
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

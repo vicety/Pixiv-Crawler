@@ -9,4 +9,6 @@ def main():
     execute(["scrapy", "crawl", "pixivSpider"]) #相当于三个命令
 
 if __name__ == "__main__":
+    # prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    # sys.path.append(prj_dir)
     main()

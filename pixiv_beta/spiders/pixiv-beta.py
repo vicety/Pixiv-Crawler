@@ -10,6 +10,10 @@ import configparser
 import os
 import json
 from pixiv_beta.settings import prj_dir
+import math
+from pixiv_beta.utils.PixivError import settings_assert
+
+settings_assert()
 
 cf = configparser.ConfigParser()
 os.chdir(prj_dir)
@@ -18,21 +22,22 @@ cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 class pixivSpider(scrapy.Spider):
     def __init__(self):
         super().__init__()
+        self.DAILY_ST = cf.getint('DAILY', 'FROM')
+        self.DAILY_END = cf.getint('DAILY', 'TO')
+        start_page = (self.DAILY_ST-1)//50+1
+        end_page = math.ceil(self.DAILY_END/50)+1
         self.ENTRY_URLS = {
             'COLLECTION': 'https://www.pixiv.net/bookmark.php',
             'ARTIST': ['https://www.pixiv.net/member_illust.php?id={0}'.format(pid) for pid in cf.get('ART', 'ID').split(' ')],
             'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag&word={0}'.format('%20'.join(cf.get('SRH', 'TAGS').split(" "))),
+            'DAILY': ['https://www.pixiv.net/ranking.php?mode=daily&p={0}&format=json'.format(i) for i in range(start_page, end_page)],
         }
         self.ENTRY_FUNC = {
             'COLLECTION': self.collection,
             'ARTIST': self.artist,
             'SEARCH': self.search,
+            'DAILY': self.daily
         }
-        # self.FAV_FILTER = {
-        #     'COLLECTION': True,
-        #     'ARTIST': False,
-        #     'SEARCH': True,
-        # }
         self.R18 = cf.getboolean('IMG', 'R18')
         self.MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
         self.MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
@@ -89,8 +94,14 @@ class pixivSpider(scrapy.Spider):
 
     def center(self, response):
         self.process = 0
-
-        yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
+        # print(self.ENTRY_URLS[self.entry])
+        if isinstance(self.ENTRY_URLS[self.entry], str):
+            yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
+        else:
+            print(len(self.ENTRY_URLS[self.entry]))
+            for url in self.ENTRY_URLS[self.entry]:
+                yield scrapy.Request(url, headers=self.header,
+                                     callback=self.ENTRY_FUNC[self.entry])
 
     def collection(self, response):
         self.update_process(response, ".column-label .count-badge::text", 'Crawling collections...')
@@ -122,8 +133,8 @@ class pixivSpider(scrapy.Spider):
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def search(self, response):
-        test = response.css("section.column-search-result #js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
-        js = json.loads(test)
+        js_text = response.css("section.column-search-result #js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
+        js = json.loads(js_text)
         self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
         # image_items = response.css("ul li.image-item")
         self.process += len(js)
@@ -138,21 +149,40 @@ class pixivSpider(scrapy.Spider):
         for url in all_works_url:
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
+    def daily(self, response):
+        self.all = self.DAILY_END - self.DAILY_ST + 1
+        print("crawling process {0}/{1}".format(self.process, self.all))
+        js = json.loads(response.text)
+        for image_item in js['contents']:
+            if not (image_item['rank'] < self.DAILY_ST or image_item['rank'] > self.DAILY_END):
+                self.process += 1
+                yield scrapy.Request('https://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}'.format(image_item['illust_id']), headers=self.header, callback=self.image_page)
+
     def image_page(self, response):
         all_img_data = response.css('._unit._work-detail-unit .work-info ul li::text').extract()
         if ('R-18' in all_img_data[-1]) ^ self.R18:
             return
         # R18 总在最后一个 多张作品与分辨率不兼容
         for img_data in all_img_data:
-            if '多张作品' in img_data and self.MULTI_IMAGE_ENABLED:
-                see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
-                see_more = parse.urljoin(response.url, see_more)
-                yield scrapy.Request(see_more, callback=self.multiImgPage)
-                return
+            if '多张作品' in img_data:
+                if self.MULTI_IMAGE_ENABLED:
+                    see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
+                    see_more = parse.urljoin(response.url, see_more)
+                    yield scrapy.Request(see_more, callback=self.multiImgPage)
+                    return
+                else:
+                    return
             elif '×' in img_data:
                 img_width, img_height = list(map(int, img_data.split('×')))
         name = response.css("._unit._work-detail-unit .work-info h1.title::text").extract_first('') # 没有把name传递到多图部分，多图部分没有log name
-        print("Crawling {0}".format(name))
+        try:
+            print("Crawling {0}".format(name))
+        except Exception as e:
+            print("log部分暂未处理日语编码问题 不影响下载")
+            pass
+        finally:
+            pass
+
         if img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT:
             return
         img_item = ImageItem()
