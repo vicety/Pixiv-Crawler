@@ -12,15 +12,19 @@
 import codecs
 import os
 import configparser
+from .utils.PixivError import settings_assert
 
+# 验证配置文件
+settings_assert()
 
+# 读取配置
 prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 os.chdir(prj_dir)
 cf = configparser.ConfigParser()
 cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 
 
-
+# 配置
 BOT_NAME = 'pixiv_beta'
 
 SPIDER_MODULES = ['pixiv_beta.spiders']
@@ -39,7 +43,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 0.75
+DOWNLOAD_DELAY = 0.60
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16

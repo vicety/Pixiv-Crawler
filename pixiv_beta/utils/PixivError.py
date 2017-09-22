@@ -18,8 +18,11 @@ def settings_assert():
     prj_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     os.chdir(prj_dir)
     cf = configparser.ConfigParser()
-    cf.read_file(codecs.open("../settings.ini", 'r', 'utf-8-sig'))
-
+    try:
+        cf.read_file(codecs.open("../settings.ini", 'r', 'utf-8-sig'))
+    except Exception as e:
+        print("配置文件格式有误 error: {0}".format(e))
+        exit(-1)
     PRJ_OPTIONS = [
         'SEARCH', 'COLLECTION', 'ARTIST', 'DAILY'
     ]
