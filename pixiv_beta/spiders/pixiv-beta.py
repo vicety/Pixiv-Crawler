@@ -132,7 +132,12 @@ class pixivSpider(scrapy.Spider):
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def search(self, response):
-        js_text = response.css("section.column-search-result #js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
+        js_text = response.css("div.layout-body div._unit input#js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
+        # html.verticaltext.no - textcombine.no - ie
+        # body
+        # div  # wrapper div.layout-body div._unit input#js-mount-point-search-result-list
+        if js_text == "Not Found":
+            print("json接口变动，烦请issue")
         js = json.loads(js_text)
         self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
         # image_items = response.css("ul li.image-item")
