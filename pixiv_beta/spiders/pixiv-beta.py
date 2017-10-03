@@ -133,9 +133,6 @@ class pixivSpider(scrapy.Spider):
 
     def search(self, response):
         js_text = response.css("div.layout-body div._unit input#js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
-        # html.verticaltext.no - textcombine.no - ie
-        # body
-        # div  # wrapper div.layout-body div._unit input#js-mount-point-search-result-list
         if js_text == "Not Found":
             print("json接口变动，烦请issue")
         js = json.loads(js_text)
