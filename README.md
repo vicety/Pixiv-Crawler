@@ -1,4 +1,5 @@
 # Pixiv-Crawler
+[English Version](/others/README_en.md)
 这是一个scrapy框架的爬虫
 基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发，其他环境下未测试
 
@@ -47,6 +48,9 @@
 	TAGS = TAG_A TAG_B ... // 搜索内容
 	
 	[DAILY] // 不受IMG中的收藏数限制
+
+### 提醒
+由于P站限制，搜索功能最多搜索1000页，可以通过添加类似“1000users入り”（不含引号）这样的tag来缩小搜索范围	
 
 ### 版本日志
 #### V1.2
