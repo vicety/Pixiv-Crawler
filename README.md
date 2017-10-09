@@ -1,5 +1,5 @@
 # Pixiv-Crawler
-[English Version](/others/README_en.md)
+[English Version](/others/README_en.md) <br>
 这是一个scrapy框架的爬虫
 基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发，其他环境下未测试
 
@@ -49,8 +49,11 @@
 	
 	[DAILY] // 不受IMG中的收藏数限制
 
-### 提醒
-由于P站限制，搜索功能最多搜索1000页，可以通过添加类似“1000users入り”（不含引号）这样的tag来缩小搜索范围	
+### 其他
+* 如果在浏览器无法登陆pixiv或爬取时速度较慢，可以尝试[修改host文件](./others/host.txt)
+* 由于P站限制，搜索功能最多搜索1000页，可以通过添加类似“1000users入り”（不含引号）这样的tag来缩小搜索范围	
+* 请确保用户语言为简体中文
+* 编辑settings.ini文件时请使用utf-8编码
 
 ### 版本日志
 #### V1.2

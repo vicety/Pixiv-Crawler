@@ -165,6 +165,7 @@ class pixivSpider(scrapy.Spider):
             return
         # R18 总在最后一个 多张作品与分辨率不兼容
         for img_data in all_img_data:
+            # print(img_data)
             if '多张作品' in img_data:
                 if self.MULTI_IMAGE_ENABLED:
                     see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
@@ -213,7 +214,7 @@ class pixivSpider(scrapy.Spider):
             print("login successfully")
             # print(log.encode('gbk').decode('gbk'))  # 由于控制台程序中会出编码问题，这里先取消log
             self.collection_num = response.css(restr).extract_first('')[:-1]
-            print("found {0}".format(self.collection_num))
+            print("found {0} result(s)".format(self.collection_num))
             if not self.collection_num:
                 raise UnmatchError("collection_num not matched")
             self.all = self.collection_num

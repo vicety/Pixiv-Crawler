@@ -1,4 +1,5 @@
 # Pixiv-Crawler
+[中文版](README.md)<br>
 A spider build on scrapy
 developed on `win10`、`Python 3.6.2 64bits`、`Scrapy 1.4.0`，not yet tested in other environment
 
@@ -47,20 +48,19 @@ input	`python main.py`
 	
 	[DAILY] // not limited by the MIN_FAV at IMG
 
-### 提醒
-由于P站限制，搜索功能最多搜索1000页，可以通过添加类似“1000users入り”（不含引号）这样的tag来缩小搜索范围	
+### Tips
+Causing by the restriction of the website，the searching function can search up to 1000 pages，however, its recommanded to add a tag like “1000users入り”（without quotes）to minimize the range of searching	
 
-### 版本日志
+### Version
 #### V1.2
-增加了日榜导出功能<br>
-增加了settings文件格式检查<br>
+Added daily ranking exporting<br>
+Added setting file format inspection<br>
 #### V1.1
-可以同时添加多个画师<br>
-修复搜索时日语编码问题<br>
-修改了setting文件结构，可以配置默认账号密码<br>
-修复了打印日志上的一些问题<br>
+Can add more than one artists at a time<br>
+Fixed a bug caused by Japanese encoding<br>
+Reconstruct the setting file，setting default account and password available<br>
+Fixed some problems occured when printing the logs<br>
 #### V1.0
-初始版本<br>
+Initial version<br>
 
-
-最后，初次写爬虫，写得不是很好，有任何问题欢迎指教
+Lastly, its my first time writing a spider, if any questions or problem, its welcomed to contact me.

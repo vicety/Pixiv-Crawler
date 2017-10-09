@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebee3262-eb45-4fe2-9cbd-18214366e300" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/others/README_en.md" afterPath="$PROJECT_DIR$/others/README_en.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pixiv_beta/spiders/pixiv-beta.py" afterPath="$PROJECT_DIR$/pixiv_beta/spiders/pixiv-beta.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.ini" afterPath="$PROJECT_DIR$/settings.ini" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -28,14 +31,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pixiv-beta.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="pixiv-beta.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pixiv_beta/spiders/pixiv-beta.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="134" column="144" lean-forward="false" selection-start-line="134" selection-start-column="144" selection-end-line="134" selection-end-column="144" />
+            <state relative-caret-position="2825">
+              <caret line="199" column="73" lean-forward="true" selection-start-line="199" selection-start-column="73" selection-end-line="199" selection-end-column="73" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="settings.ini" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pixiv_beta/settings.ini">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="38">
+              <caret line="2" column="10" lean-forward="true" selection-start-line="2" selection-start-column="10" selection-end-line="2" selection-end-column="10" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -84,11 +97,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PixivError.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="PixivError.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pixiv_beta/utils/PixivError.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="380">
-              <caret line="22" column="26" lean-forward="false" selection-start-line="22" selection-start-column="26" selection-end-line="22" selection-end-column="26" />
+            <state relative-caret-position="418">
+              <caret line="22" column="26" lean-forward="true" selection-start-line="22" selection-start-column="26" selection-end-line="22" selection-end-column="26" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -107,6 +120,12 @@
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>result</find>
+      <find>found</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -128,9 +147,9 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="754" />
-    <option name="y" value="3" />
+  <component name="ProjectFrameBounds" extendedState="1">
+    <option name="x" value="784" />
+    <option name="y" value="37" />
     <option name="width" value="927" />
     <option name="height" value="1087" />
   </component>
@@ -150,14 +169,17 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="pixiv_beta" type="b2602c69:ProjectViewProjectNode" />
               <item name="pixiv_beta" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pixiv_beta" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pixiv_beta" type="462c0819:PsiDirectoryNode" />
+              <item name="others" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pixiv_beta" type="b2602c69:ProjectViewProjectNode" />
@@ -180,6 +202,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -238,7 +262,8 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="754" y="3" width="927" height="1087" extended-state="0" />
+    <frame x="784" y="37" width="927" height="1087" extended-state="1" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25027442" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -274,6 +299,80 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="14" column="0" lean-forward="false" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+          <folding>
+            <element signature="e#1#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="26" column="4" lean-forward="false" selection-start-line="26" selection-start-column="4" selection-end-line="26" selection-end-column="4" />
+          <folding>
+            <element signature="e#435#448#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/learn/Python 3.6.0/Lib/site-packages/lxml/html/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="23" column="69" lean-forward="false" selection-start-line="23" selection-start-column="69" selection-end-line="23" selection-end-column="69" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/pipelines.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding>
+            <element signature="e#193#243#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/settings.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/utils/PixivError.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="22" column="26" lean-forward="false" selection-start-line="22" selection-start-column="26" selection-end-line="22" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/learn/Python 3.6.1/Lib/configparser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="20938">
+          <caret line="1110" column="19" lean-forward="false" selection-start-line="1110" selection-start-column="18" selection-end-line="1110" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/spiders/pixiv-beta.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2318">
+          <caret line="134" column="144" lean-forward="false" selection-start-line="134" selection-start-column="144" selection-end-line="134" selection-end-column="144" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
@@ -574,16 +673,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pixiv_beta/utils/PixivError.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="22" column="26" lean-forward="false" selection-start-line="22" selection-start-column="26" selection-end-line="22" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pixiv_beta/settings.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="437">
@@ -604,10 +693,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pixiv_beta/spiders/pixiv-beta.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="134" column="144" lean-forward="false" selection-start-line="134" selection-start-column="144" selection-end-line="134" selection-end-column="144" />
+        <state relative-caret-position="2825">
+          <caret line="199" column="73" lean-forward="true" selection-start-line="199" selection-start-column="73" selection-end-line="199" selection-end-column="73" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/settings.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="2" column="10" lean-forward="true" selection-start-line="2" selection-start-column="10" selection-end-line="2" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pixiv_beta/utils/PixivError.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="22" column="26" lean-forward="true" selection-start-line="22" selection-start-column="26" selection-end-line="22" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
