@@ -1,4 +1,4 @@
-在C:\Windows\System32\drivers\etc\hosts中添加以下内容
+?C:\Windows\System32\drivers\etc\hosts???????
 
 210.129.120.43 pixiv.net
 210.129.120.43 www.pixiv.net
