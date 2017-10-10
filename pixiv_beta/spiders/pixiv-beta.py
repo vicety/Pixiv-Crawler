@@ -9,7 +9,7 @@ import codecs
 import configparser
 import os
 import json
-from pixiv_beta.settings import prj_dir
+from ..settings import prj_dir
 import math
 
 
@@ -189,9 +189,12 @@ class pixivSpider(scrapy.Spider):
             return
         img_item = ImageItem()
         img_url = response.css('div._illust_modal.ui-modal-close-box div.wrapper img.original-image::attr(data-src)').extract_first('')
+        img_title = response.css('section.work-info h1.title::text').extract_first("")
         if not img_url:
-            raise UnmatchError("image unmatched or not enough authority to visit the page when crawling {0}".format(response.url))
+            raise UnmatchError("Unsupported gif image or not enough authority to visit the page when crawling {0}".format(response.url))
         img_item["img_url"] = [img_url]
+        img_item['title'] = img_title
+        img_item['pid'] = re.match('.*/(\d+)_p0.*', img_url).group(1)
         yield img_item
 
     def multiImgPage(self, response):
@@ -201,7 +204,7 @@ class pixivSpider(scrapy.Spider):
         for url in son_urls:
             yield scrapy.Request(url, callback=self.multiImgPageSingle)
 
-
+    # 未添加title
     def multiImgPageSingle(self, response):
         img_url = response.css('body img::attr(src)').extract_first("")
         img_item = ImageItem()

@@ -8,10 +8,13 @@
 from scrapy.pipelines.images import ImagesPipeline
 import scrapy
 import re
+import os
+from .settings import IMAGES_STORE
 
 class PixivBetaPipeline(object):
     def process_item(self, item, spider):
         return item
+
 
 class PixivBetaImagePipeline(ImagesPipeline):
     header_base = 'https://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}'
@@ -21,9 +24,22 @@ class PixivBetaImagePipeline(ImagesPipeline):
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'X-Requested-With': 'XMLHttpRequest',
     }
+    # title = ""
+    os.chdir(IMAGES_STORE)
+
     def extract_pid(self, url):
-        return re.match('.*/(\d+)_p0.*', url)
+        return re.match('.*/(\d+)_p0.*', url).group(1)
+
     def get_media_requests(self, item, info):
+        if not ('img_url' in dict(item).keys()):
+            return
         for image_url in item['img_url']:
             self.header['Referer'] = self.header_base.format(self.extract_pid(image_url))
             yield scrapy.Request(image_url, headers=self.header)
+
+    def item_completed(self, results, item, info):
+        if isinstance(item, dict) or self.images_result_field in item.fields:
+            item[self.images_result_field] = [x for ok, x in results if ok]
+        img_paths = [x['path'] for ok, x in results if ok]
+        os.rename(IMAGES_STORE+os.sep+img_paths[0], IMAGES_STORE+os.sep+'full'+os.sep+item['title']+"_"+item['pid']+'.jpg')
+        return item
