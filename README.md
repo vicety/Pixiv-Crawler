@@ -1,7 +1,9 @@
 # Pixiv-Crawler
 [English Version](/others/README_en.md) <br>
 这是一个scrapy框架的爬虫
-基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发，其他环境下未测试
+基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发<br>
+在`Ubuntu 16.04`、`Python 3.5.2 64位`<br>
+`win10`、`Python 3.6.2`、`Python 3.5.2`下测试成功
 
 ### 功能
 * 我的收藏导出
@@ -14,7 +16,7 @@
 ### 未完成部分
 * 增加一些其他的插画网站
 * 一些细节
-* 想到再加
+* 多图片网页暂不能命名文件
 
 ### requirements
 * python
