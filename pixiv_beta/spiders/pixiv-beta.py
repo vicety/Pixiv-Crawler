@@ -108,7 +108,9 @@ class pixivSpider(scrapy.Spider):
         self.process+=len(image_items)
         all_collection_urls = []
         for image_item in image_items:
-            if int(image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')) >= self.MIN_FAV:
+            # 对于已经删除的图片 可能会包含在image_items中，但无法提取bookmark，在转为int时报错，程序到此终止
+            img_bookmark = image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')
+            if img_bookmark and  int(img_bookmark) >= self.MIN_FAV:
                 all_collection_urls.append(image_item.css('a.work._work::attr(href)').extract_first(''))
         all_collection_urls = [parse.urljoin(response.url, url) for url in all_collection_urls]
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
