@@ -11,6 +11,7 @@
 
 import codecs
 import os
+import time
 import configparser
 from .utils.PixivError import settings_assert
 
@@ -91,7 +92,9 @@ IMAGES_URLS_FIELD = "img_url"
 
 if not os.path.isdir(cf.get('IMG', 'STORE_PATH')):
     print("using the default path")
-    IMAGES_STORE = os.path.join(prj_dir, 'images')
+    now_time = str(int(time.time()))
+    os.mkdir(prj_dir + os.sep + 'images_' + now_time)
+    IMAGES_STORE = os.path.join(prj_dir, 'images_' + now_time)
 else:
     IMAGES_STORE = cf.get('IMG', 'STORE_PATH')
 # Enable and configure the AutoThrottle extension (disabled by default)
