@@ -27,6 +27,7 @@ cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 
 # 配置
 BOT_NAME = 'pixiv_beta'
+LOG_LEVEL = 'WARNING'
 
 SPIDER_MODULES = ['pixiv_beta.spiders']
 NEWSPIDER_MODULE = 'pixiv_beta.spiders'
@@ -90,13 +91,14 @@ IMAGES_MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
 IMAGES_MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
 IMAGES_URLS_FIELD = "img_url"
 
-if not os.path.isdir(cf.get('IMG', 'STORE_PATH')):
+IMAGES_STORE = os.path.expanduser(cf.get('IMG', 'STORE_PATH'))
+if os.path.isfile(IMAGES_STORE):
     print("using the default path")
     now_time = str(int(time.time()))
     os.mkdir(prj_dir + os.sep + 'images_' + now_time)
     IMAGES_STORE = os.path.join(prj_dir, 'images_' + now_time)
-else:
-    IMAGES_STORE = cf.get('IMG', 'STORE_PATH')
+elif not os.path.exists(IMAGES_STORE):
+    os.makedirs(IMAGES_STORE)
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

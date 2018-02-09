@@ -3,6 +3,7 @@
 这是一个scrapy框架的爬虫
 基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发<br>
 在`Ubuntu 16.04`、`Python 3.5.2 64位`<br>
+`Archlinux`、`Python 3.6.2 64位`<br>
 `win10`、`Python 3.6.2`、`Python 3.5.2`下测试成功
 
 ### 功能
@@ -58,6 +59,10 @@
 * 如果提示setting文件编码问题，请尝试在编辑settings.ini文件时使用utf-8编码
 
 ### 版本日志
+#### V1.2.1
+指定目录不存在时自动创建<br>
+增加图集的下载和Title抓取<br>
+同时抓取图片相关信息，以json格式存储<br>
 #### V1.2
 增加了日榜导出功能<br>
 增加了settings文件格式检查<br>

@@ -35,7 +35,10 @@ class PixivBetaImagePipeline(ImagesPipeline):
         if not ('img_url' in dict(item).keys()):
             return
         for image_url in item['img_url']:
-            self.header['Referer'] = self.header_base.format(self.extract_pid(image_url))
+            try:
+                self.header['Referer'] = item['referer']
+            except KeyError as err:
+                self.header['Referer'] = self.header_base.format(self.extract_pid(image_url))
             yield scrapy.Request(image_url, headers=self.header)
 
     def item_completed(self, results, item, info):

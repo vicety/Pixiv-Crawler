@@ -14,3 +14,4 @@ class ImageItem(scrapy.Item):
     img_url = scrapy.Field()
     title = scrapy.Field()
     pid = scrapy.Field()
+    referer = scrapy.Field()
