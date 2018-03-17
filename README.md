@@ -24,7 +24,8 @@
 * scrapy
 * requests 
 * pillow 
-* pypiwin32 // 可能需要 
+* pypiwin32 // 可能需要
+* imageio //下载gif时需要
 * 如果还缺少什么，一般直接pip install就可以了
 
 ### 使用方法
