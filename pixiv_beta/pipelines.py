@@ -5,7 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-from scrapy.pipelines.images import ImagesPipeline
+from scrapy.pipelines.images import ImagesPipeline, FilesPipeline
 import scrapy
 import re
 import os
@@ -17,7 +17,7 @@ class PixivBetaPipeline(object):
         return item
 
 
-class PixivBetaImagePipeline(ImagesPipeline):
+class PixivBetaImagePipeline(FilesPipeline):
     header_base = 'https://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}'
     header = {
         'Origin': 'https://accounts.pixiv.net',
@@ -26,7 +26,6 @@ class PixivBetaImagePipeline(ImagesPipeline):
         'X-Requested-With': 'XMLHttpRequest',
     }
     # title = ""
-    os.chdir(IMAGES_STORE)
 
     def extract_pid(self, url):
         return re.match('.*/(\d+)_p0.*', url).group(1)
@@ -42,8 +41,25 @@ class PixivBetaImagePipeline(ImagesPipeline):
             yield scrapy.Request(image_url, headers=self.header)
 
     def item_completed(self, results, item, info):
-        if isinstance(item, dict) or self.images_result_field in item.fields:
-            item[self.images_result_field] = [x for ok, x in results if ok]
         img_paths = [x['path'] for ok, x in results if ok]
-        os.rename(IMAGES_STORE+os.sep+img_paths[0], IMAGES_STORE+os.sep+'full'+os.sep+item['title']+"_"+item['pid']+'.jpg')
+        if len(img_paths) > 0:
+            ext = os.path.splitext(img_paths[0])[1]
+            new_name = IMAGES_STORE + os.sep + 'full' + os.sep + item['title'] + "_" + item['pid'] + ext
+            os.rename(IMAGES_STORE + os.sep + img_paths[0], new_name)
+            if ext == '.zip':
+                self.zip2gif(new_name)
         return item
+
+    def zip2gif(self, file):
+        from zipfile import ZipFile
+        import imageio
+        import shutil
+        zip = ZipFile(file)
+        zip_folder = file.replace('.zip', '')
+        zip.extractall(zip_folder)
+        with imageio.get_writer(file.replace('.zip', '.gif'), mode='I') as writer:
+            for f in os.listdir(zip_folder):
+                writer.append_data(imageio.imread(os.path.join(zip_folder, f)))
+                #TODO: GIF帧率未实现，目前使用默认帧率
+        os.remove(file)
+        shutil.rmtree(zip_folder, ignore_errors=True)

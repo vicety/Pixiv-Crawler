@@ -240,16 +240,25 @@ class pixivSpider(Spider):
 
         if (img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT) or (self.R18 ^ r18):
             return
-        self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta['collection'], img_height, img_width))
         img_item = ImageItem()
         img_url = response.css('div._illust_modal.ui-modal-close-box div.wrapper img.original-image::attr(data-src)').extract_first('')
         img_title = response.css('section.work-info h1.title::text').extract_first("")
+        is_gif = False
         if not img_url:
-            raise UnmatchError("Unsupported gif image or not enough authority to visit the page when crawling {0}".format(response.url))
+            gif_url = re.search('https:\\\/\\\/i.pximg.net\\\/img-zip-ugoira\\\/img\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/%s_[0-9a-zA-Z]+\.zip' % pid, response.text)
+
+            if gif_url is None:
+                raise UnmatchError("Unsupported gif image or not enough authority to visit the page when crawling {0}".format(response.url))
+            else:
+                gif_url = gif_url.group().replace('\\', '')
+                is_gif = True
+                img_url = gif_url
+        img_item['is_gif'] = is_gif
         img_item["img_url"] = [img_url]
         img_item['title'] = img_title
-        img_item['pid'] = re.match('.*/(\d+)_p0.*', img_url).group(1)
+        img_item['pid'] = str(pid)
         img_item['referer'] = response.url
+        self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height, img_width, is_gif))
         yield img_item
 
     def multiImgPage(self, response):
@@ -266,6 +275,7 @@ class pixivSpider(Spider):
         img_title = img_title.replace('/', '_')
         img_url = response.css('body img::attr(src)').extract_first("")
         img_item = ImageItem()
+        img_item['is_gif'] = False
         img_item["img_url"] = [img_url]
         img_item["title"] = img_title
         img_item['pid'] = re.match('.*/(\d+_p\d*).*', img_url).group(1)

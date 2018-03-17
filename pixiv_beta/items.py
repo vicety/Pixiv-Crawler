@@ -15,3 +15,4 @@ class ImageItem(scrapy.Item):
     title = scrapy.Field()
     pid = scrapy.Field()
     referer = scrapy.Field()
+    is_gif = scrapy.Field()

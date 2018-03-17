@@ -93,7 +93,7 @@ IMAGES_MIN_WIDTH = cf.getint('IMG', 'MIN_WIDTH')
 IMAGES_MIN_HEIGHT = cf.getint('IMG', 'MIN_HEIGHT')
 IMAGES_URLS_FIELD = "img_url"
 
-IMAGES_STORE = os.path.expanduser(cf.get('IMG', 'STORE_PATH'))
+IMAGES_STORE = os.path.abspath(os.path.expanduser(cf.get('IMG', 'STORE_PATH')))
 if os.path.isfile(IMAGES_STORE):
     print("using the default path")
     now_time = str(int(time.time()))
@@ -101,6 +101,7 @@ if os.path.isfile(IMAGES_STORE):
     IMAGES_STORE = os.path.join(prj_dir, 'images_' + now_time)
 elif not os.path.exists(IMAGES_STORE):
     os.makedirs(IMAGES_STORE)
+FILES_STORE = IMAGES_STORE
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
