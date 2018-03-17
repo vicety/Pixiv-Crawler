@@ -89,7 +89,11 @@ class pixivSpider(Spider):
 
     # 入口
     def start_requests(self):
-        return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login )]
+        if os.path.isfile(os.path.join(prj_dir, '.cookie')):
+            #TODO: cookie不正确时跳转至login
+            return self.center(None)
+        else:
+            return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login )]
 
     def login(self, response):
         index_request = requests.get('http://www.pixiv.net', headers=self.header)

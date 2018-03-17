@@ -70,9 +70,11 @@ DOWNLOAD_DELAY = 0.60
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
+DOWNLOADER_MIDDLEWARES = {
 #    'pixiv_beta.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+    'pixiv_beta.middlewares.PersistentCookiesMiddleware': 701,
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
