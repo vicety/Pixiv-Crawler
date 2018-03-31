@@ -258,7 +258,7 @@ class pixivSpider(Spider):
         img_item['title'] = img_title
         img_item['pid'] = str(pid)
         img_item['referer'] = response.url
-        self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height, img_width, is_gif))
+        self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height, img_width))
         yield img_item
 
     def multiImgPage(self, response):

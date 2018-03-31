@@ -54,12 +54,12 @@ class PixivBetaImagePipeline(FilesPipeline):
         from zipfile import ZipFile
         import imageio
         import shutil
-        zip = ZipFile(file)
-        zip_folder = file.replace('.zip', '')
-        zip.extractall(zip_folder)
-        with imageio.get_writer(file.replace('.zip', '.gif'), mode='I') as writer:
-            for f in os.listdir(zip_folder):
-                writer.append_data(imageio.imread(os.path.join(zip_folder, f)))
-                #TODO: GIF帧率未实现，目前使用默认帧率
+        with ZipFile(file) as zip:
+            zip_folder = file.replace('.zip', '')
+            zip.extractall(zip_folder)
+            with imageio.get_writer(file.replace('.zip', '.gif'), mode='I') as writer:
+                for f in os.listdir(zip_folder):
+                    writer.append_data(imageio.imread(os.path.join(zip_folder, f)))
+                    #TODO: GIF帧率未实现，目前使用默认帧率
         os.remove(file)
         shutil.rmtree(zip_folder, ignore_errors=True)
