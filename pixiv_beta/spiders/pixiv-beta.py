@@ -201,58 +201,40 @@ class pixivSpider(Spider):
     def image_page(self, response):
         if len(self.data) >= self.maxsize:
             return
-        all_img_data = response.css('._unit._work-detail-unit .work-info ul li::text').extract()
-        if 'R-18' in all_img_data[-1]:
-            r18 = True
-        else:
-            r18 = False
-        # R18 总在最后一个 多张作品与分辨率不兼容
-        name = response.css("._unit._work-detail-unit .work-info h1.title::text").extract_first('')  # 没有把name传递到多图部分，多图部分没有log name
-        img_title = response.css('section.work-info h1.title::text').extract_first("")
-        img_title = img_title.replace(os.sep, '_')
-        img_title = img_title.replace('/', '_')
-        pid = re.match('.*id=(\d+)' ,response.request._url).group(1)
-        view = int(response.css(".work-info .score dl .view-count::text").extract_first('-1'))
-        praise = int(response.css(".work-info .score dl .rated-count::text").extract_first('-1'))
+        pid = re.match('.*id=(\d+)', response.request._url).group(1)
+        img_data = self.extract_json(pid, response.body.decode('utf-8'))
+        tags = [img_data["tags"]["tags"][i]['tag'] for i in range(len(img_data["tags"]["tags"]))]
+        img_title = img_data["illustTitle"]
+        img_title = img_title.replace(os.sep, '_').replace('/', '_')
+        img_width, img_height = img_data["width"], img_data["height"]
+        view = img_data["viewCount"]
+        praise = img_data["likeCount"]
+
+        r18 = True if tags[0] == 'R-18' else False
+        if (img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT) or (self.R18 ^ r18):
+            return
+
         try:
-            print("Crawling {0}".format(name))
+            print("Crawling {0}".format(img_title))
         except Exception as e:
             print("log部分暂未处理日语编码问题 不影响下载")
             pass
         finally:
             pass
-        for img_data in all_img_data:
-            # print(img_data)
-            if '多张作品' in img_data:
-                # self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta['collection']))
-                # return
-                if self.MULTI_IMAGE_ENABLED:
-                    see_more = response.css('.works_display .read-more.js-click-trackable::attr(href)').extract_first("")
-                    see_more = parse.urljoin(response.url, see_more)
-                    yield scrapy.Request(see_more, callback=self.multiImgPage)
-                    return
-                else:
-                    return
-            if '×' in img_data:
-                img_width, img_height = list(map(int, img_data.split('×')))
 
-
-
-        if (img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT) or (self.R18 ^ r18):
+        if(img_data["illustType"] == 0 and self.MULTI_IMAGE_ENABLED):
+            # 先不统计多张图片的信息了 没时间写
+            see_more = "https://www.pixiv.net/member_illust.php?mode=manga&illust_id={}".format(pid)
+            yield scrapy.Request(see_more, callback=self.multiImgPage)
             return
-        img_item = ImageItem()
-        img_url = response.css('div._illust_modal.ui-modal-close-box div.wrapper img.original-image::attr(data-src)').extract_first('')
-        img_title = response.css('section.work-info h1.title::text').extract_first("")
-        is_gif = False
-        if not img_url:
-            gif_url = re.search('https:\\\/\\\/i.pximg.net\\\/img-zip-ugoira\\\/img\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/[0-9]+\\\/%s_[0-9a-zA-Z]+\.zip' % pid, response.text)
 
-            if gif_url is None:
-                raise UnmatchError("Unsupported gif image or not enough authority to visit the page when crawling {0}".format(response.url))
-            else:
-                gif_url = gif_url.group().replace('\\', '')
-                is_gif = True
-                img_url = gif_url
+        is_gif = img_data["illustType"] == 2
+        if(is_gif):
+            print("该文件为gif文件，由于p站页面更新，还没找到接口，如果找到还请发个issue")
+
+        img_item = ImageItem()
+        img_url = img_data["urls"]["original"]
+
         img_item['is_gif'] = is_gif
         img_item["img_url"] = [img_url]
         img_item['title'] = img_title
@@ -302,6 +284,20 @@ class pixivSpider(Spider):
             print("reached the last page")
             return False
 
+    def extract_json(self, pid, text):
+        query_text = pid + ": "
+        start = text.find(query_text) + len(query_text)
+        cnt = 0
+        text = text[start:]
+        for index, i in enumerate(text):
+            if (i == '{'):
+                cnt += 1
+            elif (i == '}'):
+                cnt -= 1
+            if (cnt == 0):
+                text = text[:index + 1]
+                return json.loads(text)
+
     def spider_closed(self, spider):
         f = open("data_{0}.json".format('_'.join(cf.get('SRH', 'TAGS').split(" "))), 'w')
         # pickle.dump(self.data, f, 0)
@@ -310,5 +306,6 @@ class pixivSpider(Spider):
         json.dump(data, f)
         print("Crawling complete, got {0} data".format(len(self.data)))
         f.close()
+
 
 
