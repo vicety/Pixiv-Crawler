@@ -1,5 +1,8 @@
 import scrapy
 import re
+# from scrapy.xlib.pydispatch import dispatcher
+from scrapy.exceptions import CloseSpider
+from scrapy.signalmanager import SignalManager
 from urllib import parse
 from ..utils.PixivError import *
 from ..items import ImageItem
@@ -22,6 +25,19 @@ cf.read_file(codecs.open("settings.ini", 'r', 'utf-8-sig'))
 
 class pixivSpider(Spider):
     name = "pixivSpider"
+    collection_set = set()
+    init_colletion_set_size = 0
+    data = []
+    process = 0
+    maxsize = 5
+    signalManger = SignalManager()
+    entry = cf.get('PRJ', 'TARGET')
+
+    if entry == "COLLECTION" and os.path.exists("./.trace"):
+        with open("./.trace", "rb") as f:
+            collection_set = pickle.load(f)
+    init_colletion_set_size = len(collection_set)
+
     def __init__(self):
         super().__init__()
         self.DAILY_ST = cf.getint('DAILY', 'FROM')
@@ -48,21 +64,24 @@ class pixivSpider(Spider):
         self.account = cf.get('PRJ', 'ACCOUNT')
         self.password = cf.get('PRJ', 'PASSWORD')
         self.MULTI_IMAGE_ENABLED = cf.getboolean('IMG', 'MULTI_IMG_ENABLED')
-        self.data = []
-        self.maxsize = 1e9
         self.collection_num = -1
-        self.process = 0
         self.all = 0
+
+
+
+        # dispatcher.connect(self.update_collection_set, signals.item_scraped)
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(pixivSpider, cls).from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        crawler.signals.connect(cls.update_collection_set, signal=signals.item_scraped)
         return spider
 
     # allowed_domains = []
     start_urls = ['https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index']
-    agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+    # agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+    agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:7.0.1) Gecko/20100101 Firefox/7.7'
 
     header = {
         'Origin': 'https://accounts.pixiv.net',
@@ -93,7 +112,7 @@ class pixivSpider(Spider):
             #TODO: cookie不正确时跳转至login
             return self.center(None)
         else:
-            return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login )]
+            return [scrapy.Request(self.start_urls[0], headers=self.header, callback=self.login)]
 
     def login(self, response):
         index_request = requests.get('http://www.pixiv.net', headers=self.header)
@@ -122,7 +141,6 @@ class pixivSpider(Spider):
 
     # 功能分支
     def center(self, response):
-        self.process = 0
         # print(self.ENTRY_URLS[self.entry])
         if isinstance(self.ENTRY_URLS[self.entry], str):
             yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
@@ -135,13 +153,19 @@ class pixivSpider(Spider):
     def collection(self, response):
         self.update_process(response, ".column-label .count-badge::text", 'Crawling collections...')
         image_items = response.css('._image-items.js-legacy-mark-unmark-list li.image-item')
-        self.process+=len(image_items)
+        # self.process += len(image_items)
         all_collection_urls = []
+
         for image_item in image_items:
             # 对于已经删除的图片 可能会包含在image_items中，但无法提取bookmark，在转为int时报错，程序到此终止
+            # 在image_page会再检查一遍fav_num
+            item_url = image_item.css('a.work._work::attr(href)').extract_first('')
+            pid = item_url.split('illust_id=')[-1]
+            if pid in self.collection_set:
+                continue
             img_bookmark = image_item.css('ul li a.bookmark-count._ui-tooltip::text').extract_first('')
-            if img_bookmark and  int(img_bookmark) >= self.MIN_FAV:
-                all_collection_urls.append(image_item.css('a.work._work::attr(href)').extract_first(''))
+            if img_bookmark and int(img_bookmark) >= self.MIN_FAV:
+                all_collection_urls.append(item_url)
         all_collection_urls = [parse.urljoin(response.url, url) for url in all_collection_urls]
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
         # ???
@@ -156,7 +180,7 @@ class pixivSpider(Spider):
                             "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')))
         all_works_url = response.css('ul._image-items li.image-item a.work._work::attr(href)').extract()
         all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
-        self.process+=len(all_works_url)
+        # self.process+=len(all_works_url)
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
         if self.tryNextPage(next_page_url):
             next_page_url = parse.urljoin(response.url, next_page_url)
@@ -165,7 +189,7 @@ class pixivSpider(Spider):
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def search(self, response):
-        if len(self.data) > self.maxsize:
+        if self.process > self.maxsize:
             return
         js_text = response.css("div.layout-body div._unit input#js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
         if js_text == "Not Found":
@@ -173,7 +197,7 @@ class pixivSpider(Spider):
         js = json.loads(js_text)
         self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
         # image_items = response.css("ul li.image-item")
-        self.process += len(js)
+        # self.process += len(js)
         all_works_url = []
         for image_item in js:
             if image_item["bookmarkCount"] >= self.MIN_FAV:
@@ -194,13 +218,14 @@ class pixivSpider(Spider):
         js = json.loads(response.text)
         for image_item in js['contents']:
             if not (image_item['rank'] < self.DAILY_ST or image_item['rank'] > self.DAILY_END):
-                self.process += 1
+                # self.process += 1
                 yield scrapy.Request('https://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}'.format(image_item['illust_id']),
                                      headers=self.header, callback=self.image_page)
 
     def image_page(self, response):
-        if len(self.data) >= self.maxsize:
+        if self.process > self.maxsize:
             return
+
         pid = re.match('.*id=(\d+)', response.request._url).group(1)
         img_data = self.extract_json(pid, response.body.decode('utf-8'))
         tags = [img_data["tags"]["tags"][i]['tag'] for i in range(len(img_data["tags"]["tags"]))]
@@ -209,9 +234,13 @@ class pixivSpider(Spider):
         img_width, img_height = img_data["width"], img_data["height"]
         view = img_data["viewCount"]
         praise = img_data["likeCount"]
-
         r18 = True if tags[0] == 'R-18' else False
+
+        if praise < self.MIN_FAV:
+            return
         if (img_width < self.MIN_WIDTH or img_height < self.MIN_HEIGHT) or (self.R18 ^ r18):
+            return
+        if self.entry == "COLLECTION" and pid in self.collection_set:
             return
 
         try:
@@ -224,6 +253,9 @@ class pixivSpider(Spider):
 
         if(img_data["illustType"] == 0 and self.MULTI_IMAGE_ENABLED):
             # 先不统计多张图片的信息了 没时间写
+            self.data.append(
+                ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height,
+                        img_width))
             see_more = "https://www.pixiv.net/member_illust.php?mode=manga&illust_id={}".format(pid)
             yield scrapy.Request(see_more, callback=self.multiImgPage)
             return
@@ -264,8 +296,8 @@ class pixivSpider(Spider):
         img_item['referer'] = response.url
         yield img_item
 
+    # called at page that contains multiple images
     def update_process(self, response, restr, log):
-        # 适用于 xxx件
         if self.collection_num == -1:
             print("login successfully")
             # print(log.encode('gbk').decode('gbk'))  # 由于控制台程序中会出编码问题，这里先取消log 不会
@@ -290,20 +322,47 @@ class pixivSpider(Spider):
         cnt = 0
         text = text[start:]
         for index, i in enumerate(text):
-            if (i == '{'):
+            if i == '{':
                 cnt += 1
-            elif (i == '}'):
+            elif i == '}':
                 cnt -= 1
-            if (cnt == 0):
+            if cnt == 0:
                 text = text[:index + 1]
                 return json.loads(text)
 
+    @classmethod
+    def update_collection_set(cls, item, response ,spider):
+        # if cls.entry == "COLLECTION":
+        cls.collection_set.add(item["pid"].split('_')[0])
+        cls.process = len(cls.collection_set) - cls.init_colletion_set_size
+        # for debug only
+        if cls.process > cls.maxsize:
+            if cls.entry == "COLLECTION":
+                with open("./.trace", "wb") as f:
+                    pickle.dump(cls.collection_set, f)
+
+            # store .json file
+            f = open("data_{0}.json".format('_'.join(cf.get('SRH', 'TAGS').split(" "))), 'w')
+            data = [item.__dict__() for item in cls.data]
+            json.dump(data, f)
+
+            print("Crawling complete, got {0} data".format(len(cls.data)))
+            f.close()
+            os.abort()
+            # raise CloseSpider
+            # cls.signalManger.send_catch_log(signal=signals.spider_closed)
+
     def spider_closed(self, spider):
+        # store .trace file
+        if self.entry == "COLLECTION":
+            with open("./.trace", "wb") as f:
+                pickle.dump(self.collection_set, f)
+
+        # store .json file
         f = open("data_{0}.json".format('_'.join(cf.get('SRH', 'TAGS').split(" "))), 'w')
-        # pickle.dump(self.data, f, 0)
-        # li = [item.__dict__() for item in self.data]
         data = [item.__dict__() for item in self.data]
         json.dump(data, f)
+
         print("Crawling complete, got {0} data".format(len(self.data)))
         f.close()
 

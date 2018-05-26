@@ -9,8 +9,8 @@ from scrapy.pipelines.images import ImagesPipeline, FilesPipeline
 import scrapy
 import re
 import os
+import shutil
 from .settings import IMAGES_STORE
-
 
 class PixivBetaPipeline(object):
     def process_item(self, item, spider):
@@ -44,16 +44,24 @@ class PixivBetaImagePipeline(FilesPipeline):
         img_paths = [x['path'] for ok, x in results if ok]
         if len(img_paths) > 0:
             ext = os.path.splitext(img_paths[0])[1]
-            new_name = IMAGES_STORE + os.sep + 'full' + os.sep + item['title'] + "_" + item['pid'] + ext
-            os.rename(IMAGES_STORE + os.sep + img_paths[0], new_name)
+            new_file_path = IMAGES_STORE + os.sep + 'full' + os.sep + item['title'] + "_" + item['pid'] + ext
+            file_name = new_file_path.split(os.sep)[-1]
+            os.rename(IMAGES_STORE + os.sep + img_paths[0], new_file_path)
+            if 'p' in item["pid"]:
+                dir_name = item["title"].replace(" ", "_").replace(os.sep, "_")
+                if not os.path.exists("{0}/full/{1}".format(IMAGES_STORE, dir_name)):
+                    os.mkdir("{0}/full/{1}".format(IMAGES_STORE, dir_name))
+                shutil.move("{0}/full/{1}".format(IMAGES_STORE, file_name),
+                            "{0}/full/{1}/{2}".format(IMAGES_STORE, dir_name, file_name))
+
+            # deprecated in version 1.2.2
             if ext == '.zip':
-                self.zip2gif(new_name)
+                self.zip2gif(new_file_path)
         return item
 
     def zip2gif(self, file):
         from zipfile import ZipFile
         import imageio
-        import shutil
         with ZipFile(file) as zip:
             zip_folder = file.replace('.zip', '')
             zip.extractall(zip_folder)
