@@ -110,7 +110,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-
-# my settings
-.idea/
