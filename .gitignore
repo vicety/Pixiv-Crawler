@@ -1,7 +1,10 @@
 # Added by myself
 *.json
 *.note
+.trace
+.cookie
 test/
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -20,3 +20,6 @@ since we also return scrapy.Reauest object here, it's ok to return self.center(N
 # pycharm 不能调试记得改host
 
 # 多张图片是先被检测pid后分开下载的
+
+# ignore everything  /name
+# ignore just the dir name/

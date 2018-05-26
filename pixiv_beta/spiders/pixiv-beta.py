@@ -1,7 +1,7 @@
 import scrapy
 import re
 # from scrapy.xlib.pydispatch import dispatcher
-from scrapy.exceptions import CloseSpider
+# from scrapy.exceptions import CloseSpider
 from scrapy.signalmanager import SignalManager
 from urllib import parse
 from ..utils.PixivError import *
@@ -29,7 +29,7 @@ class pixivSpider(Spider):
     init_colletion_set_size = 0
     data = []
     process = 0
-    maxsize = 5
+    maxsize = 1e9  # for debug only
     signalManger = SignalManager()
     entry = cf.get('PRJ', 'TARGET')
 
@@ -66,10 +66,6 @@ class pixivSpider(Spider):
         self.MULTI_IMAGE_ENABLED = cf.getboolean('IMG', 'MULTI_IMG_ENABLED')
         self.collection_num = -1
         self.all = 0
-
-
-
-        # dispatcher.connect(self.update_collection_set, signals.item_scraped)
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -141,7 +137,6 @@ class pixivSpider(Spider):
 
     # 功能分支
     def center(self, response):
-        # print(self.ENTRY_URLS[self.entry])
         if isinstance(self.ENTRY_URLS[self.entry], str):
             yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
         else:
@@ -153,7 +148,6 @@ class pixivSpider(Spider):
     def collection(self, response):
         self.update_process(response, ".column-label .count-badge::text", 'Crawling collections...')
         image_items = response.css('._image-items.js-legacy-mark-unmark-list li.image-item')
-        # self.process += len(image_items)
         all_collection_urls = []
 
         for image_item in image_items:
@@ -180,7 +174,6 @@ class pixivSpider(Spider):
                             "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')))
         all_works_url = response.css('ul._image-items li.image-item a.work._work::attr(href)').extract()
         all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
-        # self.process+=len(all_works_url)
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
         if self.tryNextPage(next_page_url):
             next_page_url = parse.urljoin(response.url, next_page_url)
@@ -189,6 +182,7 @@ class pixivSpider(Spider):
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def search(self, response):
+        # for debug
         if self.process > self.maxsize:
             return
         js_text = response.css("div.layout-body div._unit input#js-mount-point-search-result-list::attr(data-items)").extract_first('Not Found')
@@ -196,8 +190,6 @@ class pixivSpider(Spider):
             print("json接口变动，烦请issue")
         js = json.loads(js_text)
         self.update_process(response, '._unit .column-header span.count-badge::text', 'Searching {0}'.format(cf.get('SRH', 'TAGS')))
-        # image_items = response.css("ul li.image-item")
-        # self.process += len(js)
         all_works_url = []
         for image_item in js:
             if image_item["bookmarkCount"] >= self.MIN_FAV:
@@ -251,7 +243,7 @@ class pixivSpider(Spider):
         finally:
             pass
 
-        if(img_data["illustType"] == 0 and self.MULTI_IMAGE_ENABLED):
+        if img_data["pageCount"] > 1 and self.MULTI_IMAGE_ENABLED:
             # 先不统计多张图片的信息了 没时间写
             self.data.append(
                 ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height,
@@ -272,7 +264,8 @@ class pixivSpider(Spider):
         img_item['title'] = img_title
         img_item['pid'] = str(pid)
         img_item['referer'] = response.url
-        self.data.append(ImgData(img_title, pid, r18, view, praise, response.meta.setdefault('collection', ''), img_height, img_width))
+        self.data.append(ImgData(img_title, pid, r18, view, praise,
+                                 response.meta.setdefault('collection', ''), img_height, img_width))
         yield img_item
 
     def multiImgPage(self, response):

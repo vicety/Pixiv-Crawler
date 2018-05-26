@@ -1,5 +1,4 @@
 # Pixiv-Crawler
-[English Version](/others/README_en.md) <br>
 这是一个scrapy框架的爬虫
 基于`win10`、`Python 3.6.2 64位`、`Scrapy 1.4.0`开发<br>
 在`Ubuntu 16.04`、`Python 3.5.2 64位`<br>
@@ -41,7 +40,7 @@
 	MIN_WIDTH = 0	//图片筛选条件
 	MIN_HEIGHT = 0
 	MIN_FAV = 0		
-	STORE_PATH = C:\example\images		// 图片储存目录，默认为工程目录下的image
+	STORE_PATH = ./images		// 图片储存目录，默认为工程目录下的image
 	R18 = False		//仅下载R18
 	MULI_IMG_ENABLED = False	// 是否下载图集
 
@@ -60,6 +59,9 @@
 * 如果提示setting文件编码问题，请尝试在编辑settings.ini文件时使用utf-8编码
 
 ### 版本日志
+#### V1.2.3
+增加对COLLECTION中爬取内容的追踪，过滤曾经爬过的图片，以支持个人收藏的快速更新
+对文件存储结构和打印日志部分的优化
 #### V1.2.2
 应对Pixiv的页面改动，修改了部分数据的获取接口<br>
 由于找不到接口，不再支持Gif文件（如果找到了，还请通知一下）<br>
@@ -67,6 +69,7 @@
 指定目录不存在时自动创建<br>
 增加图集的下载和Title抓取<br>
 同时抓取图片相关信息，以json格式存储<br>
+存储cookie以自动登录
 #### V1.2.0
 增加了日榜导出功能<br>
 增加了settings文件格式检查<br>
