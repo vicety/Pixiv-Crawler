@@ -42,16 +42,18 @@ class pixivSpider(Spider):
         super().__init__()
         self.DAILY_ST = cf.getint('DAILY', 'FROM')
         self.DAILY_END = cf.getint('DAILY', 'TO')
-        start_page = (self.DAILY_ST-1)//50+1
-        end_page = math.ceil(self.DAILY_END/50)+1
+        start_page = (self.DAILY_ST-1) // 50 + 1
+        end_page = math.ceil(self.DAILY_END / 50) + 1
         self.ENTRY_URLS = {
-            'COLLECTION': 'https://www.pixiv.net/bookmark.php',
+            'COLLECTION': 'https://www.pixiv.net/bookmark.php?rest=show',
+            'COLLECTION_PRIVATE': 'https://www.pixiv.net/bookmark.php?rest=hide',
             'ARTIST': ['https://www.pixiv.net/member_illust.php?id={0}'.format(pid) for pid in cf.get('ART', 'ID').split(' ')],
             'SEARCH': 'https://www.pixiv.net/search.php?s_mode=s_tag&word={0}'.format('%20'.join(cf.get('SRH', 'TAGS').split(" "))),
             'DAILY': ['https://www.pixiv.net/ranking.php?mode=daily&p={0}&format=json'.format(i) for i in range(start_page, end_page)],
         }
         self.ENTRY_FUNC = {
             'COLLECTION': self.collection,
+            'COLLECTION_PRIVATE': self.collection,
             'ARTIST': self.artist,
             'SEARCH': self.search,
             'DAILY': self.daily
@@ -140,7 +142,7 @@ class pixivSpider(Spider):
         if isinstance(self.ENTRY_URLS[self.entry], str):
             yield scrapy.Request(self.ENTRY_URLS[self.entry], headers=self.header, callback=self.ENTRY_FUNC[self.entry])
         else:
-            print(len(self.ENTRY_URLS[self.entry]))
+            print(len(self.ENTRY_URLS[self.entry]), " start urls")
             for url in self.ENTRY_URLS[self.entry]:
                 yield scrapy.Request(url, headers=self.header,
                                      callback=self.ENTRY_FUNC[self.entry])

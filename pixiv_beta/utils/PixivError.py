@@ -24,7 +24,7 @@ def settings_assert():
         print("配置文件格式有误 error: {0}".format(e))
         exit(-1)
     PRJ_OPTIONS = [
-        'SEARCH', 'COLLECTION', 'ARTIST', 'DAILY'
+        'SEARCH', 'COLLECTION', 'COLLECTION_PRIVATE', 'ARTIST', 'DAILY'
     ]
 
     assert cf.get('PRJ', 'TARGET') in PRJ_OPTIONS, 'Check whether your PRJ option is SEARCH COLLECTION ARTIST or DAILY'

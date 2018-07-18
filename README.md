@@ -32,7 +32,15 @@
 	python main.py
 #### Setting文件配置说明
 	[PRJ]  
-	TARGET = COLLECTION  // 四种执行方式之一 COLLECTION  ARTIST SEARCH DAILY 对应 收藏导出 画师作品导出 搜索内容导出 日榜导出
+	/* 
+	四种执行方式之一
+	COLLECTION  收藏
+	COLLECTION_PRIVATE 非公开收藏
+	ARTIST 画师作品
+	SEARCH 搜索内容
+	DAILY 日榜
+	*/
+	TARGET = COLLECTION  
 	ACCOUNT = 
 	PASSWORD = 
 	
@@ -62,6 +70,7 @@
 #### V1.2.3
 增加对COLLECTION中爬取内容的追踪，过滤曾经爬过的图片，以支持个人收藏的快速更新<br>
 对文件存储结构和打印日志部分的优化<br>
+支持爬取非公开收藏
 #### V1.2.2
 应对Pixiv的页面改动，修改了部分数据的获取接口<br>
 由于找不到接口，不再支持Gif文件（如果找到了，还请通知一下）<br>
