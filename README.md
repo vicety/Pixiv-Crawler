@@ -28,8 +28,9 @@
 * 如果还缺少什么，一般直接pip install就可以了
 
 ### 使用方法
-先在`settings.ini`进行配置，然后在`main.py`文件目录下进入cmd
-	python main.py
+先在`settings.ini`进行配置，然后在`main.py`文件目录下进入cmd, 输入python main.py <br>
+2018/11/21 **注意** : P站又改网页了，由于个人原因，短期内不会更新代码，目前已知按作者爬取已不可用，
+但按收藏爬取和按搜索关键词爬取仍然是可用的。
 #### Setting文件配置说明
 	[PRJ]  
 	/* 

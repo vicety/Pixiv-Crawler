@@ -172,8 +172,9 @@ class pixivSpider(Spider):
             yield scrapy.Request(url, headers=self.header, callback=self.image_page)
 
     def artist(self, response):
-        self.update_process(response, "div._unit.manage-unit span.count-badge::text",
-                            "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')))
+        # update_at: 2018/11/21
+        self.update_process(response, '//*[@id="root"]/div[1]/div/div[2]/div[1]/div[1]/div[1]',
+                            "Artist: {0}".format(response.css("._user-profile-card .profile a.user-name::text").extract_first('unknown')), selector='xpath')
         all_works_url = response.css('ul._image-items li.image-item a.work._work::attr(href)').extract()
         all_works_url = [parse.urljoin(response.url, url) for url in all_works_url]
         next_page_url = response.css('.column-order-menu .pager-container .next ._button::attr(href)').extract_first("")
@@ -292,11 +293,14 @@ class pixivSpider(Spider):
         yield img_item
 
     # called at page that contains multiple images
-    def update_process(self, response, restr, log):
+    def update_process(self, response, restr, log, selector='css'):
         if self.collection_num == -1:
             print("login successfully")
             # print(log.encode('gbk').decode('gbk'))  # 由于控制台程序中会出编码问题，这里先取消log 不会
-            self.collection_num = response.css(restr).extract_first('')[:-1]
+            if selector == 'css':
+                self.collection_num = response.css(restr).extract_first('')[:-1]
+            elif selector == 'xpath':
+                self.collection_num = response.xpath(restr).extract_first('')[:-1]
             print("found {0} result(s)".format(self.collection_num))
             if not self.collection_num:
                 raise UnmatchError("collection_num not matched")
